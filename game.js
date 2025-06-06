@@ -1,22 +1,48 @@
+/**
+ * 2048游戏核心类
+ * 实现了2048游戏的所有基本功能，包括：
+ * - 游戏初始化
+ * - 方块移动和合并
+ * - 分数计算
+ * - 触摸和键盘控制
+ * - 游戏状态管理
+ */
 class Game2048 {
+  /**
+   * 构造函数：初始化游戏
+   * 设置基本属性并调用初始化方法
+   */
   constructor() {
+    // 游戏网格大小（4x4）
     this.gridSize = 4;
+    // 初始化空网格
     this.grid = Array(this.gridSize).fill().map(() => Array(this.gridSize).fill(0));
+    // 初始化分数
     this.score = 0;
+    // 从本地存储获取最高分
     this.bestScore = parseInt(localStorage.getItem('bestScore')) || 0;
+    // 游戏结束标志
     this.gameOver = false;
-    this.tiles = new Map(); // 存储所有的tile元素
+    // 存储所有方块元素的Map
+    this.tiles = new Map();
+    // 记录是否已经达到过2048
+    this.reached2048 = false;
 
+    // 初始化游戏
     this.initializeDOM();
     this.initializeListeners();
     this.initializeGame();
 
-    // 在窗口大小改变时重新计算方块位置
+    // 监听窗口大小变化，重新计算方块位置
     window.addEventListener('resize', () => {
       this.updateAllTilePositions();
     });
   }
 
+  /**
+   * 初始化DOM元素
+   * 获取游戏所需的所有DOM元素引用
+   */
   initializeDOM() {
     this.scoreDisplay = document.getElementById('score');
     this.bestScoreDisplay = document.getElementById('best-score');
@@ -28,6 +54,10 @@ class Game2048 {
     this.bestScoreDisplay.textContent = this.bestScore;
   }
 
+  /**
+   * 初始化事件监听器
+   * 设置键盘和触摸事件的处理
+   */
   initializeListeners() {
     // 键盘控制
     document.addEventListener('keydown', (e) => {
@@ -65,15 +95,18 @@ class Game2048 {
     let touchStartX, touchStartY;
     const gameContainer = document.querySelector('.game-container');
 
+    // 记录触摸起始位置
     gameContainer.addEventListener('touchstart', (e) => {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
     });
 
+    // 防止页面滚动
     gameContainer.addEventListener('touchmove', (e) => {
-      e.preventDefault(); // 防止页面滚动
+      e.preventDefault();
     });
 
+    // 处理触摸结束，计算滑动方向
     gameContainer.addEventListener('touchend', (e) => {
       if (this.gameOver) return;
 
@@ -83,7 +116,7 @@ class Game2048 {
       const deltaX = touchEndX - touchStartX;
       const deltaY = touchEndY - touchStartY;
 
-      // 确定滑动方向
+      // 确定滑动方向（需要超过最小滑动距离）
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (Math.abs(deltaX) > 30) { // 最小滑动距离
           if (deltaX > 0) {
@@ -109,6 +142,10 @@ class Game2048 {
     });
   }
 
+  /**
+   * 初始化游戏状态
+   * 重置网格和分数，添加初始方块
+   */
   initializeGame() {
     // 清空网格和分数
     this.grid = Array(this.gridSize).fill().map(() => Array(this.gridSize).fill(0));
@@ -119,17 +156,25 @@ class Game2048 {
     this.scoreDisplay.textContent = '0';
     this.gameMessage.classList.remove('game-over');
 
-    // 添加初始方块
+    // 添加两个初始方块
     this.addRandomTile();
     this.addRandomTile();
   }
 
+  /**
+   * 重新开始游戏
+   */
   restart() {
     this.initializeGame();
   }
 
+  /**
+   * 在随机空位置添加新方块
+   * 90%概率生成2，10%概率生成4
+   */
   addRandomTile() {
     const emptyCells = [];
+    // 找出所有空单元格
     for (let i = 0; i < this.gridSize; i++) {
       for (let j = 0; j < this.gridSize; j++) {
         if (this.grid[i][j] === 0) {
@@ -139,13 +184,21 @@ class Game2048 {
     }
 
     if (emptyCells.length > 0) {
+      // 随机选择一个空单元格
       const { x, y } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      // 90%概率生成2，10%概率生成4
       const value = Math.random() < 0.9 ? 2 : 4;
       this.grid[x][y] = value;
       this.createTileElement(x, y, value);
     }
   }
 
+  /**
+   * 创建新的方块DOM元素
+   * @param {number} x - 行索引
+   * @param {number} y - 列索引
+   * @param {number} value - 方块的值
+   */
   createTileElement(x, y, value) {
     const tile = document.createElement('div');
     tile.className = 'tile';
@@ -159,6 +212,13 @@ class Game2048 {
     this.updateTilePosition(x, y, x, y);
   }
 
+  /**
+   * 更新方块位置
+   * @param {number} fromX - 起始行索引
+   * @param {number} fromY - 起始列索引
+   * @param {number} toX - 目标行索引
+   * @param {number} toY - 目标列索引
+   */
   updateTilePosition(fromX, fromY, toX, toY) {
     const tile = this.tiles.get(`${fromX},${fromY}`);
     if (tile) {
@@ -170,6 +230,12 @@ class Game2048 {
     }
   }
 
+  /**
+   * 计算方块的实际像素位置
+   * @param {number} row - 行索引
+   * @param {number} col - 列索引
+   * @returns {Object} 包含left和top值的对象
+   */
   calculateTilePosition(row, col) {
     const gap = parseInt(getComputedStyle(document.querySelector('.grid-container')).gap) || 15;
     const containerWidth = this.tileContainer.clientWidth;
@@ -181,6 +247,10 @@ class Game2048 {
     };
   }
 
+  /**
+   * 更新所有方块的位置
+   * 用于窗口大小改变时重新计算位置
+   */
   updateAllTilePositions() {
     this.tiles.forEach((tile, key) => {
       const [x, y] = key.split(',').map(Number);
@@ -190,24 +260,10 @@ class Game2048 {
     });
   }
 
-  mergeTiles(tile1, tile2) {
-    const newValue = parseInt(tile1.dataset.value) * 2;
-    tile2.dataset.value = newValue;
-    tile2.textContent = newValue;
-    tile1.remove();
-
-    // 更新分数
-    this.score += newValue;
-    this.scoreDisplay.textContent = this.score;
-
-    // 更新最高分
-    if (this.score > this.bestScore) {
-      this.bestScore = this.score;
-      this.bestScoreDisplay.textContent = this.bestScore;
-      localStorage.setItem('bestScore', this.bestScore);
-    }
-  }
-
+  /**
+   * 移动方块
+   * @param {string} direction - 移动方向：'up', 'down', 'left', 'right'
+   */
   move(direction) {
     let moved = false;
     const vectors = {
@@ -252,13 +308,11 @@ class Game2048 {
             y: y + vector.y
           };
 
-          // 检查是否可以合并
           if (this.withinBounds(nextPos) &&
             this.grid[nextPos.x][nextPos.y] === this.grid[x][y] &&
             !this.tiles.get(`${nextPos.x},${nextPos.y}`).merged &&
             !this.tiles.get(`${x},${y}`).merged) {
 
-            // 执行合并
             const newValue = this.grid[x][y] * 2;
             this.grid[nextPos.x][nextPos.y] = newValue;
             this.grid[x][y] = 0;
@@ -266,25 +320,14 @@ class Game2048 {
             const targetTile = this.tiles.get(`${nextPos.x},${nextPos.y}`);
             const mergingTile = this.tiles.get(`${x},${y}`);
 
-            // 更新目标方块的值
             targetTile.dataset.value = newValue;
             targetTile.textContent = newValue;
             targetTile.merged = true;
 
-            // 移除被合并的方块
             mergingTile.remove();
             this.tiles.delete(`${x},${y}`);
 
-            // 更新分数
-            this.score += newValue;
-            this.scoreDisplay.textContent = this.score;
-
-            // 更新最高分
-            if (this.score > this.bestScore) {
-              this.bestScore = this.score;
-              this.bestScoreDisplay.textContent = this.bestScore;
-              localStorage.setItem('bestScore', this.bestScore);
-            }
+            this.updateScore(newValue);
 
             moved = true;
             hasMoved = true;
@@ -303,6 +346,12 @@ class Game2048 {
     }
   }
 
+  /**
+   * 构建遍历顺序
+   * 确保从正确的方向开始移动方块
+   * @param {Object} vector - 移动方向向量
+   * @returns {Object} 包含x和y遍历顺序的对象
+   */
   buildTraversals(vector) {
     const traversals = {
       x: Array(this.gridSize).fill().map((_, i) => i),
@@ -316,6 +365,12 @@ class Game2048 {
     return traversals;
   }
 
+  /**
+   * 找到方块可以移动到的最远位置
+   * @param {Object} cell - 当前单元格位置
+   * @param {Object} vector - 移动方向向量
+   * @returns {Object} 最远可达位置
+   */
   findFarthestPosition(cell, vector) {
     let previous;
     let next = { x: cell.x, y: cell.y };
@@ -331,34 +386,61 @@ class Game2048 {
     return previous;
   }
 
+  /**
+   * 检查位置是否在网格范围内
+   * @param {Object} position - 要检查的位置
+   * @returns {boolean} 是否在范围内
+   */
   withinBounds(position) {
     return position.x >= 0 && position.x < this.gridSize &&
       position.y >= 0 && position.y < this.gridSize;
   }
 
+  /**
+   * 检查游戏是否结束
+   * 当没有空格且没有可合并的相邻方块时，游戏结束
+   * @returns {boolean} 游戏是否结束
+   */
   isGameOver() {
     // 检查是否还有空格
-    for (let x = 0; x < this.gridSize; x++) {
-      for (let y = 0; y < this.gridSize; y++) {
-        if (this.grid[x][y] === 0) return false;
-
-        // 检查相邻格子是否可以合并
-        const directions = [{ x: 0, y: 1 }, { x: 1, y: 0 }];
-        for (let dir of directions) {
-          const newX = x + dir.x;
-          const newY = y + dir.y;
-          if (this.withinBounds({ x: newX, y: newY }) &&
-            this.grid[x][y] === this.grid[newX][newY]) {
-            return false;
-          }
-        }
+    for (let i = 0; i < this.gridSize; i++) {
+      for (let j = 0; j < this.gridSize; j++) {
+        if (this.grid[i][j] === 0) return false;
       }
     }
+
+    // 检查是否还有可以合并的相邻方块
+    for (let i = 0; i < this.gridSize; i++) {
+      for (let j = 0; j < this.gridSize; j++) {
+        const currentValue = this.grid[i][j];
+        // 检查右侧
+        if (j < this.gridSize - 1 && this.grid[i][j + 1] === currentValue) return false;
+        // 检查下方
+        if (i < this.gridSize - 1 && this.grid[i + 1][j] === currentValue) return false;
+      }
+    }
+
+    // 如果没有空格且没有可合并的方块，游戏结束
+    this.gameOver = true;
+    this.gameMessage.classList.add('game-over');
     return true;
+  }
+
+  // 更新分数
+  updateScore(value) {
+    this.score += value;
+    this.scoreDisplay.textContent = this.score;
+
+    // 更新最高分
+    if (this.score > this.bestScore) {
+      this.bestScore = this.score;
+      this.bestScoreDisplay.textContent = this.bestScore;
+      localStorage.setItem('bestScore', this.bestScore);
+    }
   }
 }
 
-// 启动游戏
+// 当DOM加载完成后启动游戏
 document.addEventListener('DOMContentLoaded', () => {
   new Game2048();
 }); 

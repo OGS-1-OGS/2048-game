@@ -1,6 +1,23 @@
-.DS_Store
-node_modules/
+# IDE/Editor files
 .vscode/
 .idea/
+*.sublime-*
+*.swp
+.DS_Store
+
+# Logs
 *.log
-Thumbs.db 
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Build output
+dist/
+build/ 

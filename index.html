@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2048游戏</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 </head>
 
 <body>
@@ -67,6 +68,38 @@
     </div>
   </div>
   <script src="game.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var skew = 1;
+
+      function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function frame() {
+        skew = Math.max(0.8, skew - 0.001);
+
+        confetti({
+          particleCount: 1,
+          startVelocity: 0,
+          ticks: 200,
+          origin: {
+            x: Math.random(),
+            y: (Math.random() * skew) - 0.2
+          },
+          colors: ['#ffffff'],
+          shapes: ['circle'],
+          gravity: randomInRange(0.4, 0.6),
+          scalar: randomInRange(0.4, 1),
+          drift: randomInRange(-0.4, 0.4)
+        });
+
+        requestAnimationFrame(frame);
+      }
+
+      frame();
+    });
+  </script>
 </body>
 
 </html>

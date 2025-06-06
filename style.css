@@ -1,19 +1,23 @@
+/* 基础样式重置 */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* 基本页面布局 */
 html,
 body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  /* 防止页面滚动 */
 }
 
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
-  background-color: #faf8ef;
+  background-color: #212121;
+  /* 2048游戏特有的米色背景 */
   color: #776e65;
   display: flex;
   justify-content: center;
@@ -22,12 +26,15 @@ body {
   padding: 20px;
 }
 
+/* 游戏容器 */
 .container {
   width: 100%;
   max-width: 500px;
+  /* 限制最大宽度，保持游戏界面紧凑 */
   margin: 0 auto;
 }
 
+/* 头部样式 */
 header {
   display: flex;
   justify-content: space-between;
@@ -42,6 +49,7 @@ h1 {
   color: #776e65;
 }
 
+/* 分数显示区域 */
 .scores-container {
   display: flex;
   gap: 10px;
@@ -68,18 +76,22 @@ h1 {
   font-weight: bold;
 }
 
+/* 游戏主区域 */
 .game-container {
   position: relative;
   background: #bbada0;
   padding: 15px;
   border-radius: 8px;
   touch-action: none;
+  /* 禁用浏览器默认触摸行为 */
   margin: 0 auto;
   width: 100%;
   max-width: 500px;
   aspect-ratio: 1;
+  /* 保持正方形 */
 }
 
+/* 网格容器 */
 .grid-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -93,6 +105,7 @@ h1 {
   display: contents;
 }
 
+/* 网格单元格 */
 .grid-cell {
   width: 100%;
   background: rgba(238, 228, 218, 0.35);
@@ -100,12 +113,7 @@ h1 {
   aspect-ratio: 1;
 }
 
-.grid-cell::before {
-  content: '';
-  display: block;
-  padding-bottom: 100%;
-}
-
+/* 方块容器 */
 .tile-container {
   position: absolute;
   top: 15px;
@@ -115,6 +123,7 @@ h1 {
   z-index: 2;
 }
 
+/* 方块样式 */
 .tile {
   position: absolute;
   width: calc((100% - 45px) / 4);
@@ -132,6 +141,7 @@ h1 {
   padding: 0;
 }
 
+/* 不同数值方块的颜色 */
 .tile[data-value="2"] {
   background: #eee4da;
 }
@@ -190,6 +200,7 @@ h1 {
   font-size: 1.5rem;
 }
 
+/* 游戏结束消息 */
 .game-message {
   display: none;
   position: absolute;
@@ -216,6 +227,7 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* 重试按钮 */
 .retry-button {
   background: #8f7a66;
   border: none;
@@ -232,6 +244,7 @@ h1 {
   background: #7f6a56;
 }
 
+/* 游戏说明文本 */
 .game-explanation {
   margin-top: 20px;
   text-align: center;
@@ -253,6 +266,7 @@ h1 {
     font-size: 2rem;
   }
 
+  /* 移动端分数显示调整 */
   .score-box {
     padding: 8px 12px;
     min-width: 80px;
@@ -267,6 +281,7 @@ h1 {
     font-size: 1.2rem;
   }
 
+  /* 移动端游戏区域调整 */
   .game-container {
     padding: 10px;
     width: 100%;
@@ -284,11 +299,11 @@ h1 {
     bottom: 10px;
   }
 
+  /* 移动端方块大小和字体调整 */
   .tile {
     width: calc((100% - 30px) / 4);
     height: calc((100% - 30px) / 4);
     font-size: 1.5rem;
-    transition: all 100ms ease-in-out;
   }
 
   .tile[data-value="128"],
@@ -308,7 +323,7 @@ h1 {
   }
 }
 
-/* 确保在横屏模式下游戏区域不会太大 */
+/* 横屏模式特殊处理 */
 @media (max-width: 520px) and (orientation: landscape) {
   .game-container {
     width: min(100%, 80vh);
